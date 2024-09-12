@@ -21,7 +21,7 @@ El ´plan original es administrar las sucursales de una empresa,
 #
 
 
-
+#MAIN
 def HOME ():
     print("Seleccione un rol:\n" "A. Para administrar\n""V. Para vender\n""-1. Para finalizar")
     option= str(input())
@@ -96,9 +96,10 @@ def editar ():
             
 
 def editar_2 ():
-    option_2= input("Ingrese que desea modificar\n""N. Nombre\n""P. Producto\n""S. Stock",)
+    option_2= input("Ingrese que desea modificar\n""N. Nombre\n""P. Producto\n""S. Stock\n",)
     while option_2 not in ("N","P","S"):
-        
+        option_2= input("Ingrese que desea modificar\n""N. Nombre\n""P. Producto\n""S. Stock\n",)
+    if option_2 
 
 
 def vender ():
@@ -117,9 +118,7 @@ def vender ():
 
 
 
-def vender_suc (pos,matriz):
-    return("Hola")
-
+a= [["Alegria",{"0111114"}]]
 
 
 
@@ -128,23 +127,3 @@ def vender_suc (pos,matriz):
 #AL FINAL
 abc=HOME()
 empresa_suc=[]
-
-
-
-def agregar():
-    print ("En caso de querer volver:\n""H. Para volver a Home\n""Esc. Para volver al rol de Administrar")
-    new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
-    pos= busqueda (empresa, new_suc)
-    while new_suc not in ("H","Esc"):
-        if new_suc == "H":
-            #Funcion home
-            HOME()
-        elif new_suc == "Esc":
-            #Funcion Administrar
-            administrar ()
-        elif pos == -1:
-            print("Sucursal repetida")
-        else:
-            empresa.append (new_suc)
-        new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
-        pos= busqueda (empresa, new_suc)
