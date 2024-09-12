@@ -23,19 +23,21 @@ El ´plan original es administrar las sucursales de una empresa,
 
 
 def HOME ():
-    print("Seleccione un rol:",/n,"1.Administrar")
-    option= input("Elige el rol que desee tomar: "A" Para administrar ; "V" Para vender " ; "-1" para finalizar,)
-    while option != ("A" or "V" or "-1"):
-        option= input("Elige el rol que desee tomar: "A" Para administrar ; "V" Para vender " ; "-1" para finalizar,)
+    print("Seleccione un rol:\n" "A. Para administrar\n""V. Para vender\n""-1. Para finalizar")
+    option= str(input())
+    while option not in ("A", "V", "-1"):
+        print("Opción inválida. Intente nuevamente.")
+        option= str(input("Seleccione un rol:\n" "A. Para administrar\n""V. Para vender\n""-1. Para finalizar\n",))
     if option == "A":
-        #funcion de administracion
+        print ("Rol Administrativo")
+        administrar ()
     elif option == "V":
-        #funcion para vender
+        print ("Rol Venta")
+        vender ()
     elif option == "-1":
         print ("Programa terminado")
 
-
-
+#PRIMER PARTE DEL PROGRAMA
 def busqueda (matriz,buscado):
     n= len (matriz) -1
     while n>-1 and (matriz[0][n]!= buscado):
@@ -43,42 +45,106 @@ def busqueda (matriz,buscado):
     return n 
 
 def administrar ():
-    option = input("Elige que operacion quieres hacer: "add" Agregar sucursal ; "edit" Para modificar algun valor de la empresa ; "H" Para volver al inicio", )
-    while option != ("add" or "edit" or  "H"):
-        option = input("Elige que operacion quieres hacer: "add" Agregar sucursal ; "edit" Para modificar algun valor de la empresa ; "H" Para volver al inicio", )
+    option= str(input("Eliga que operacion desea hacer:\n""add. Agregar sucursal\n""edit. Para modificar algun valor de la empresa\n""H.Para volver al inicio\n",))
+    while option not in ("add","edit","H"):
+         print("Opción inválida. Intente nuevamente.")
+         option= str(input("Eliga que operacion desea hacer:\n""add. Agregar sucursal\n""edit. Para modificar algun valor de la empresa\n""H.Para volver al inicio\n",))
     if option == "add":
         #funcion agregar sucursal
+        agregar ()
     elif option == "edit":
         #funcion modificar la empresa
+        editar ()
     elif option == "H":
         #funcion Home
+        HOME()
+
+def agregar():
+    print ("En caso de querer volver:\n""H. Para volver a Home\n""Esc. Para volver al rol de Administrar")
+    new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
+    pos= busqueda (empresa, new_suc)
+    while new_suc not in ("H","Esc"):
+        if new_suc == "H":
+            #Funcion home
+            HOME()
+        elif new_suc == "Esc":
+            #Funcion Administrar
+            administrar ()
+        elif pos == -1:
+            print("Sucursal repetida")
+        else:
+            empresa.append (new_suc)
+        new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
+        pos= busqueda (empresa, new_suc)
+
+
+def editar ():
+    print ("En caso de querer volver:\n""H. Para volver a Home\n""Esc. Para volver al rol de Administrar")
+    option=input("Ingrese que sucursal desea modificar:",)
+    pos= busqueda (empresa, option)
+    while option not in ("H","Esc"):
+        if option == "H":
+            #Funcion home
+            HOME()
+        elif new_suc == "Esc":
+            #Funcion Administrar
+            administrar ()
+        elif pos == -1:
+            print("Sucursal no encontrada")
+        else:
+            editar_2 () #Con pos como la posicion de la matriz
+            
+
+def editar_2 ():
+    option_2= input("Ingrese que desea modificar\n""N. Nombre\n""P. Producto\n""S. Stock",)
+    while option_2 not in ("N","P","S"):
+        
+
 
 def vender ():
-    option= input ("Ingrese la sucursal que desee operar: ", )
+    option = str(input("Ingrese la sucursal que desee operar:\n""H. Volver a Home\n""<nombre de sucursal> . Para operar esa sucursal\n",))
     pos= busqueda (matriz, option)
-    while (pos == "-1") and (option != "H"):
-        option= input ("Ingrese la sucursal que desee operar: ", )
+    while option not in ("H") or (pos == -1):
+        option= str(input("Ingrese la sucursal que desee operar:\n""H. Volver a Home\n""<nombre de sucursal> . Para operar esa sucursal\n",))
         pos= busqueda (matriz, option)
     if option == "H":
         #funcion home
+        HOME()
     else:
+        vender_suc(pos,matriz)
         #funcion vender acorde a la sucursal elegida
         #como parametro sera  (matriz, pos) [posicion elegida del sucursal]
 
 
-def agregar (empresa):
+
+def vender_suc (pos,matriz):
+    return("Hola")
+
+
+
+
+
+
+#AL FINAL
+abc=HOME()
+empresa_suc=[]
+
+
+
+def agregar():
+    print ("En caso de querer volver:\n""H. Para volver a Home\n""Esc. Para volver al rol de Administrar")
     new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
     pos= busqueda (empresa, new_suc)
-    while (pos != "-1") and (new_suc != ("H" or "Esc")):
-        new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", )
+    while new_suc not in ("H","Esc"):
+        if new_suc == "H":
+            #Funcion home
+            HOME()
+        elif new_suc == "Esc":
+            #Funcion Administrar
+            administrar ()
+        elif pos == -1:
+            print("Sucursal repetida")
+        else:
+            empresa.append (new_suc)
+        new_suc= input("Ingrese el nombre de la nueva sucursal que desea agregar: ", ) #"H" para volver a home y "Esc " para volver a administrar
         pos= busqueda (empresa, new_suc)
-    if new_suc == "H":
-        #Funcion home
-    elif new_suc == "Esc":
-        #Funcion administrar
-    else:
-        empresa.append (new_suc)
-    
-                             
-
-abc= HOME()
