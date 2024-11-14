@@ -168,7 +168,193 @@ def agregar():
             print(f"\nSucursal '{new_suc}' agregada con éxito.")
             mostrar_inventarios(empresa_suc)
 
-# Las demás funciones se mantienen igual...
+def editar_2(pos):
+    while True:
+        print(f"\nSucursal seleccionada: {empresa_suc[pos][0]}")
+        print("En caso de querer volver:\n0. Para volver a Home\n9. Para volver al rol de Administrar\n-1. Para terminar")
+
+        try:
+            option_2 = int(input("Ingrese qué desea modificar:\n1. Nombre\n2. Producto\n3. Stock\n").strip())
+        except ValueError:
+            print("Error: Debe ingresar un número válido.")
+            continue  
+
+        # Comprobar si la opción es volver
+        if option_2 in (0, 9, -1):
+            volver_a_menu(option_2, Administrativo)
+
+        while option_2 not in (1, 2, 3):
+            print("Opción inválida. Intente nuevamente.")
+            try:
+                option_2 = int(input("Ingrese qué desea modificar:\n1. Nombre\n2. Producto\n3. Stock\n").strip())
+            except ValueError:
+                print("Error: Debe ingresar un número válido.")
+
+        sucursal = empresa_suc[pos]
+
+        if option_2 == 1:
+            nuevo_nombre = input("Ingrese el nuevo nombre: ").strip()
+            
+            while busqueda(empresa_suc, nuevo_nombre) != -1:
+                print(f"El nombre '{nuevo_nombre}' ya existe. Intente con otro nombre.")
+                nuevo_nombre = input("Ingrese el nuevo nombre: ").strip()
+
+            sucursal[0] = nuevo_nombre 
+            print(f"Nombre de la sucursal cambiado a {nuevo_nombre}.")
+
+        elif option_2 == 2:
+            producto = input("Ingrese el producto a agregar: ").strip()
+            if not long_dic(sucursal): 
+                print("No se puede agregar más productos a esta sucursal.")
+                continue  
+
+            try:
+                precio = float(input(f"Ingrese el precio del producto '{producto}': "))
+                stock = int(input(f"Ingrese el stock del producto '{producto}': "))
+            except ValueError:
+                print("Error: Ingrese valores numéricos válidos para el precio y el stock.")
+                continue
+
+            if producto in sucursal[1]:
+                print(f"El producto '{producto}' ya existe en la sucursal.")
+            else:
+                sucursal[1][producto] = (precio, stock)  
+                print(f"Producto '{producto}' agregado con precio {precio} y stock {stock}.")
+            
+            opcion = input("\n¿Desea mirar todas las sucursales? (S/N): ").upper()
+            if opcion in ("S", "SI"):
+                mostrar_inventarios(empresa_suc)
+
+        elif option_2 == 3:
+            producto = input("Ingrese el producto para modificar su stock: ").strip()
+
+            if producto not in sucursal[1]:
+                print(f"Producto '{producto}' no encontrado.")
+            else:
+                try:
+                    nuevo_precio = float(input(f"Ingrese el nuevo precio para '{producto}': "))
+                    nuevo_stock = int(input(f"Ingrese el nuevo stock para '{producto}': "))
+                except ValueError:
+                    print("Error: Ingrese valores numéricos válidos para el precio y el stock.")
+                    continue
+
+                sucursal[1][producto] = (nuevo_precio, nuevo_stock) 
+                print(f"Producto '{producto}' actualizado con precio {nuevo_precio} y stock {nuevo_stock}.")
+
+            opcion = input("\n¿Desea mirar todas las sucursales? 1.Si, 0.No : ")
+            if opcion == "1":
+                mostrar_inventarios(empresa_suc)
+
+def Vender():
+    while True:
+        print("\nIngrese el número de la sucursal que desee operar:\n0. Volver a Home")
+        mostrar_sucs()
+
+        try:
+            option = int(input("Ingrese el número de la sucursal a operar o una opción para volver: "))
+        except ValueError:
+            print("Error: Debe ingresar un número válido o una opción correcta (H o Esc).")
+            continue  
+        if option in (0,-1):
+            volver_a_menu(option,main)
+        if 1 <= option <= len(empresa_suc):  
+            pos = option - 1  
+            vender_suc(pos)  
+        else:
+            print("Número de sucursal no válido. Intente nuevamente.")
+
+
+def vender_suc(pos):
+    carrito = {} 
+    sucursal = empresa_suc[pos][0] 
+    productos = empresa_suc[pos][1] 
+    contador = 0
+
+    while True:
+        if contador == 0:
+            print(f"\nOperando en {sucursal}")
+        else:
+            print("\nSiguiente compra")
+        try:
+            precio_minimo = float(input("Ingrese el precio mínimo para los productos a mostrar (ejemplo: 50): "))
+        except ValueError:
+            print("Error: Debe ingresar un número válido para el precio.")
+            continue
+
+        productos_filtrados = dict(filter(lambda item: item[1][0] >= precio_minimo, productos.items()))
+
+        if not productos_filtrados:
+            print(f"No hay productos disponibles con un precio mayor o igual a ${precio_minimo}.")
+            continuar = input("¿Desea continuar con otro precio? (S/N): ").strip().upper()
+            if continuar == "N":
+                break
+            else:
+                continue
+
+        print("Productos disponibles:")
+        for producto, (precio, stock) in productos_filtrados.items():
+            print(f"{producto} - Precio: ${precio}, Stock disponible: {stock}")
+
+        producto = input("\nSeleccione un producto o escriba '0' para volver al Home, '9' para volver a selección de sucursal: ").strip()
+        
+        if producto in ("0","9","-1"):
+            volver_a_menu(int(producto), Vender)
+            break
+        
+        if producto not in productos_filtrados:
+            print(f"El producto '{producto}' no está disponible o no cumple con el criterio de precio. Intente nuevamente.")
+            continue
+
+        stock_disponible = productos_filtrados[producto][1]
+        try:
+            cantidad = int(input(f"Ingrese la cantidad de '{producto}' que desea comprar (stock disponible: {stock_disponible}): "))
+        except ValueError:
+            print("Error: Debe ingresar un número válido para la cantidad.")
+            continue
+
+        while cantidad > stock_disponible or cantidad <= 0:
+            print(f"La cantidad ingresada es inválida. El stock disponible es {stock_disponible}.")
+            try:
+                cantidad = int(input(f"Ingrese una cantidad válida para '{producto}': "))
+            except ValueError:
+                print("Error: Debe ingresar un número válido.")
+                continue
+
+        if producto in carrito:
+            carrito[producto]['cantidad'] += cantidad
+        else:
+            carrito[producto] = {
+                'precio': productos_filtrados[producto][0],
+                'cantidad': cantidad 
+            }
+
+        productos[producto] = (productos[producto][0], stock_disponible - cantidad)
+
+        continuar = input("¿Desea seguir comprando? (S/N): ").strip().upper()
+        if continuar == "N":
+            try:
+                descuento = float(input("Ingrese el porcentaje de descuento (por ejemplo, 10 para 10%): "))
+            except ValueError:
+                print("Error: Debe ingresar un valor numérico para el descuento.")
+                descuento = 0.0  
+
+            descuento_factor = (100 - descuento) / 100  
+
+            carrito_descuento = list(map(lambda item: (item[0], {'precio': item[1]['precio'] * descuento_factor, 'cantidad': item[1]['cantidad']}), carrito.items()))
+
+            print(f"\nInventario de \"{sucursal}\":")
+            print(f"{'Producto':<12} {'Cantidad':<10} {'Precio original':<15} {'Precio con descuento':<20}")
+            print('-' * 55) 
+
+            total = 0
+            for producto, datos in carrito_descuento:
+                precio_total_producto = datos['precio'] * datos['cantidad']
+                print(f"{producto:<12} {datos['cantidad']:<10} ${carrito[producto]['precio']:<15.2f} ${datos['precio']:<20.2f}")
+                total += precio_total_producto
+
+            print('-' * 55) 
+            print(f"Total a pagar (con descuento): ${total:.2f}")  
+            contador += 1
 
 if __name__ == "__main__":
     main()
