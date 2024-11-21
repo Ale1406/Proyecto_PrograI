@@ -15,31 +15,7 @@ def cargar_sucursales():
                     sucursal["Productos"][producto] = tuple(valores)
             return [[suc["Sucursal"], suc["Productos"]] for suc in datos]
     except (FileNotFoundError, json.JSONDecodeError):
-        # Si el archivo no existe o está vacío, retornar la matriz inicial
-        print("Archivo JSON no encontrado o vacío. Usando datos iniciales.")
-        return [
-            ["Sucursal Pedrito", {
-                "Pan": (1200, 50),
-                "Leche": (1000, 20),
-                "Azúcar": (1500, 60),
-                "Arroz": (800, 30),
-                "Harina": (700, 25)
-            }],
-            ["Sucursal Juan", {
-                "Pan": (1100, 55),
-                "Leche": (1050, 22),
-                "Café": (900, 35),
-                "Yerba": (1200, 40),
-                "Galletitas": (750, 50),
-                "Aceite": (950, 30)
-            }],
-            ["Maxi Sucursal", {
-                "Pan": (1150, 60),
-                "Leche": (1080, 25),
-                "Huevos": (1300, 15),
-                "Queso": (1600, 45)
-            }]
-        ]
+        return []
 
 # Guardar datos en JSON después de modificaciones
 def guardar_sucursales(empresa_suc):
@@ -87,7 +63,7 @@ def editar_sucursal():
     # Crear ventana para editar productos
     ventana_editar = tk.Toplevel(root)
     ventana_editar.title(f"Editar {sucursal[0]}")
-    ventana_editar.geometry("400x300")
+    ventana_editar.geometry("400x400")
 
     productos_list = tk.Listbox(ventana_editar, width=50)
     productos_list.pack(pady=10)
@@ -136,11 +112,38 @@ def editar_sucursal():
         productos_list.insert(seleccion_producto, f"{producto_seleccionado} - Precio: ${nuevo_precio}, Stock: {nuevo_stock}")
         messagebox.showinfo("Éxito", f"Producto '{producto_seleccionado}' actualizado correctamente.")
 
+    def eliminar_producto():
+        seleccion_producto = productos_list.curselection()
+        if not seleccion_producto:
+            messagebox.showerror("Error", "Debe seleccionar un producto.")
+            return
+
+        producto_seleccionado = productos_list.get(seleccion_producto).split(" - ")[0]
+        del sucursal[1][producto_seleccionado]
+        guardar_sucursales(empresa_suc)
+        productos_list.delete(seleccion_producto)
+        messagebox.showinfo("Éxito", f"Producto '{producto_seleccionado}' eliminado correctamente.")
+
     agregar_producto_btn = tk.Button(ventana_editar, text="Agregar Producto", command=agregar_producto)
     agregar_producto_btn.pack(pady=5)
 
     editar_producto_btn = tk.Button(ventana_editar, text="Editar Producto", command=editar_producto)
     editar_producto_btn.pack(pady=5)
+
+    eliminar_producto_btn = tk.Button(ventana_editar, text="Eliminar Producto", command=eliminar_producto)
+    eliminar_producto_btn.pack(pady=5)
+
+def eliminar_sucursal():
+    seleccion = sucursales_list.curselection()
+    if not seleccion:
+        messagebox.showerror("Error", "Debe seleccionar una sucursal.")
+        return
+
+    indice = seleccion[0]
+    sucursal_eliminada = empresa_suc.pop(indice)
+    guardar_sucursales(empresa_suc)
+    mostrar_inventarios()
+    messagebox.showinfo("Éxito", f"Sucursal '{sucursal_eliminada[0]}' eliminada correctamente.")
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -159,5 +162,8 @@ agregar_sucursal_btn.pack(pady=5)
 
 editar_sucursal_btn = tk.Button(root, text="Editar Sucursal", command=editar_sucursal)
 editar_sucursal_btn.pack(pady=5)
+
+eliminar_sucursal_btn = tk.Button(root, text="Eliminar Sucursal", command=eliminar_sucursal)
+eliminar_sucursal_btn.pack(pady=5)
 
 root.mainloop()
