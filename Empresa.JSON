@@ -1,0 +1,23 @@
+[
+    {
+        "nombre": "Sucursal Pedrito",
+        "productos": {
+            "Pan": {"precio": 1200, "stock": 50},
+            "Leche": {"precio": 1000, "stock": 20},
+            "Azúcar": {"precio": 1500, "stock": 60},
+            "Arroz": {"precio": 800, "stock": 30},
+            "Harina": {"precio": 700, "stock": 25}
+        }
+    },
+    {
+        "nombre": "Sucursal Juan",
+        "productos": {
+            "Pan": {"precio": 1100, "stock": 55},
+            "Leche": {"precio": 1050, "stock": 22},
+            "Café": {"precio": 900, "stock": 35},
+            "Yerba": {"precio": 1200, "stock": 40},
+            "Galletitas": {"precio": 750, "stock": 50},
+            "Aceite": {"precio": 950, "stock": 30}
+        }
+    }
+]
