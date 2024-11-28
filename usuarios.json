@@ -1,77 +1,17 @@
 [
     {
-        "Sucursal": "Sucursal Pedrito",
-        "Productos": {
-            "Pan": [
-                1200,
-                50
-            ],
-            "Leche": [
-                2500.0,
-                15
-            ],
-            "Azucar": [
-                1500,
-                60
-            ],
-            "Arroz": [
-                800,
-                30
-            ],
-            "Harina": [
-                700,
-                25
-            ]
-        }
+        "nombre": "Santiago",
+        "apellido": "Elcano",
+        "dni": "45014240"
     },
     {
-        "Sucursal": "Sucursal Juan",
-        "Productos": {
-            "Pan": [
-                1100,
-                55
-            ],
-            "Leche": [
-                1050,
-                22
-            ],
-            "Cafe": [
-                900,
-                35
-            ],
-            "Yerba": [
-                1200,
-                40
-            ],
-            "Galletitas": [
-                750,
-                50
-            ],
-            "Aceite": [
-                950,
-                30
-            ]
-        }
+        "nombre": "Tomas",
+        "apellido": "Rodriguez",
+        "dni": "45240014"
     },
     {
-        "Sucursal": "Maxi Sucursal",
-        "Productos": {
-            "Pan": [
-                1150,
-                60
-            ],
-            "Leche": [
-                1080,
-                24
-            ],
-            "Huevos": [
-                1300,
-                15
-            ],
-            "Queso": [
-                1600,
-                45
-            ]
-        }
+        "nombre": "Lucas",
+        "apellido": "Yoo",
+        "dni": "43456657"
     }
 ]
