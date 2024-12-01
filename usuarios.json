@@ -1,4 +1,17 @@
 [
-    {"nombre": "Juan", "apellido": "Pérez", "dni": "12345678"},
-    {"nombre": "Santiago", "apellido": "Elcano", "dni": "45014240"}
+    {
+        "nombre": "Santiago",
+        "apellido": "Elcano",
+        "dni": "45014240"
+    },
+    {
+        "nombre": "Tomas",
+        "apellido": "Rodriguez",
+        "dni": "45240014"
+    },
+    {
+        "nombre": "Lucas",
+        "apellido": "Yoo",
+        "dni": "43456657"
+    }
 ]
