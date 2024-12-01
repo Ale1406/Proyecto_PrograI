@@ -139,6 +139,7 @@ def eliminar_sucursal():
     messagebox.showinfo("Éxito", "Sucursal eliminada.")
 # Funciones de ventas
 def operar_venta(sucursal):
+    boleta = []
     ventana_venta = tk.Toplevel()
     ventana_venta.title(f"Ventas en {sucursal[0]}")
     ventana_venta.geometry("400x400")
@@ -170,7 +171,25 @@ def operar_venta(sucursal):
         guardar_sucursales(empresa_suc)
         productos_list.delete(seleccion)
         productos_list.insert(seleccion, f"{producto_seleccionado} - Precio: ${precio}, Stock: {stock - cantidad}")
+
+        # Agregar producto vendido a la boleta
+        boleta.append((producto_seleccionado, cantidad, precio * cantidad))
         messagebox.showinfo("Venta realizada", f"Se vendieron {cantidad} unidades de '{producto_seleccionado}'.")
+
+    def finalizar_venta():
+        if not boleta:
+            messagebox.showinfo("Boleta", "No hay productos vendidos.")
+            return
+
+        # Mostrar el resumen de la venta
+        resumen = "\n".join([f"{prod} x{cant} - ${total:.2f}" for prod, cant, total in boleta])
+        total_final = sum(total for _, _, total in boleta)
+        messagebox.showinfo("Boleta", f"Resumen de la venta:\n\n{resumen}\n\nTotal: ${total_final:.2f}")
+
+        # Reiniciar la boleta para la próxima venta
+        boleta.clear()
+
+    tk.Button(ventana_venta, text="Finalizar Venta", command=finalizar_venta).pack(pady=10)
 
     tk.Button(ventana_venta, text="Vender Producto", command=vender_producto).pack(pady=10)
 
