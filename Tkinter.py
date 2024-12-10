@@ -259,7 +259,7 @@ def crear_cuenta():
 # Configuración de la ventana principal
 ventana_login = tk.Tk()
 ventana_login.title("Iniciar sesión")
-ventana_login.geometry("300x250")
+ventana_login.geometry("400x300")
 
 tk.Label(ventana_login, text="Nombre:").pack(pady=5)
 nombre_entry = tk.Entry(ventana_login)
