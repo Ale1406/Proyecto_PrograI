@@ -1,10 +1,35 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import json
+import smtplib
+from email.message import EmailMessage
+from uuid import uuid4
+
 
 ARCHIVO_JSON = "sucursales.json"
+USUARIOS_JSON = "usuarios.json"
 
-# Cargar datos desde JSON al inicio del programa
+EMAIL_REMITENTE = "alejandro.ore1406@gmail.com"
+EMAIL_CONTRASEÑA = "Kevingston15"  # Usa una contraseña de aplicación para mayor seguridad.
+def enviar_correo(destinatario, nombre, enlace_verificacion):
+   msg = EmailMessage()
+   msg['Subject'] = "Verificación de Cuenta"
+   msg['From'] = EMAIL_REMITENTE
+   msg['To'] = destinatario
+   # Contenido del correo
+   msg.set_content(f"""\
+Hola {nombre},
+Gracias por registrarte en nuestro sistema. Por favor, verifica tu cuenta haciendo clic en el siguiente enlace:
+{enlace_verificacion}
+Si no solicitaste esta cuenta, ignora este correo.
+Saludos,
+Sistema de Gestión de Sucursales
+""")
+   # Envío del correo
+   with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+       smtp.login(EMAIL_REMITENTE, EMAIL_CONTRASEÑA)
+       smtp.send_message(msg)
+# Funciones para manejar datos
 def cargar_sucursales():
     try:
         with open(ARCHIVO_JSON, "r") as archivo:
@@ -16,62 +41,54 @@ def cargar_sucursales():
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
-# Guardar datos en JSON después de modificaciones
 def guardar_sucursales(empresa_suc):
-    datos = []
-    for sucursal in empresa_suc:
-        datos.append({
-            "Sucursal": sucursal[0],
-            "Productos": {producto: list(valores) for producto, valores in sucursal[1].items()}
-        })
+    datos = [{"Sucursal": suc[0], "Productos": {prod: list(vals) for prod, vals in suc[1].items()}} for suc in empresa_suc]
     with open(ARCHIVO_JSON, "w") as archivo:
         json.dump(datos, archivo, indent=4)
 
-# Inicializar las sucursales
+def cargar_usuarios():
+    try:
+        with open(USUARIOS_JSON, "r") as archivo:
+            return json.load(archivo)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def guardar_usuarios(usuarios):
+    with open(USUARIOS_JSON, "w") as archivo:
+        json.dump(usuarios, archivo, indent=4)
+
 empresa_suc = cargar_sucursales()
 
-# Funciones para la interfaz
+# Funciones administrativas
 def mostrar_inventarios():
     sucursales_list.delete(0, tk.END)
     for sucursal in empresa_suc:
         sucursales_list.insert(tk.END, sucursal[0])
 
-def ventana_administrativo():
-    ventana_inicio.withdraw()  # Ocultar ventana inicial
-    root.deiconify()  # Mostrar ventana administrativa
-
-
 def agregar_sucursal():
     nueva_sucursal = simpledialog.askstring("Agregar Sucursal", "Ingrese el nombre de la nueva sucursal:")
-    if not nueva_sucursal:
+    if not nueva_sucursal or any(suc[0] == nueva_sucursal for suc in empresa_suc):
+        messagebox.showerror("Error", "Sucursal inválida o ya existente.")
         return
-
-    if any(suc[0] == nueva_sucursal for suc in empresa_suc):
-        messagebox.showerror("Error", "La sucursal ya existe.")
-        return
-
     empresa_suc.append([nueva_sucursal, {}])
     guardar_sucursales(empresa_suc)
     mostrar_inventarios()
-    messagebox.showinfo("Éxito", f"Sucursal '{nueva_sucursal}' agregada correctamente.")
-
+    messagebox.showinfo("Éxito", f"Sucursal '{nueva_sucursal}' agregada.")
 def editar_sucursal():
     seleccion = sucursales_list.curselection()
     if not seleccion:
-        messagebox.showerror("Error", "Debe seleccionar una sucursal.")
+        messagebox.showerror("Error", "Seleccione una sucursal.")
         return
 
     indice = seleccion[0]
     sucursal = empresa_suc[indice]
 
-    # Crear ventana para editar productos
-    ventana_editar = tk.Toplevel(root)
+    ventana_editar = tk.Toplevel(ventana_administrativa)
     ventana_editar.title(f"Editar {sucursal[0]}")
     ventana_editar.geometry("400x400")
 
     productos_list = tk.Listbox(ventana_editar, width=50)
     productos_list.pack(pady=10)
-
     for producto, (precio, stock) in sucursal[1].items():
         productos_list.insert(tk.END, f"{producto} - Precio: ${precio}, Stock: {stock}")
 
@@ -95,6 +112,7 @@ def editar_sucursal():
         guardar_sucursales(empresa_suc)
         productos_list.insert(tk.END, f"{nuevo_producto} - Precio: ${precio}, Stock: {stock}")
         messagebox.showinfo("Éxito", f"Producto '{nuevo_producto}' agregado correctamente.")
+        pass
 
     def editar_producto():
         seleccion_producto = productos_list.curselection()
@@ -115,6 +133,7 @@ def editar_sucursal():
         productos_list.delete(seleccion_producto)
         productos_list.insert(seleccion_producto, f"{producto_seleccionado} - Precio: ${nuevo_precio}, Stock: {nuevo_stock}")
         messagebox.showinfo("Éxito", f"Producto '{producto_seleccionado}' actualizado correctamente.")
+        pass
 
     def eliminar_producto():
         seleccion_producto = productos_list.curselection()
@@ -127,61 +146,29 @@ def editar_sucursal():
         guardar_sucursales(empresa_suc)
         productos_list.delete(seleccion_producto)
         messagebox.showinfo("Éxito", f"Producto '{producto_seleccionado}' eliminado correctamente.")
+        pass
 
-    agregar_producto_btn = tk.Button(ventana_editar, text="Agregar Producto", command=agregar_producto)
-    agregar_producto_btn.pack(pady=5)
-
-    editar_producto_btn = tk.Button(ventana_editar, text="Editar Producto", command=editar_producto)
-    editar_producto_btn.pack(pady=5)
-
-    eliminar_producto_btn = tk.Button(ventana_editar, text="Eliminar Producto", command=eliminar_producto)
-    eliminar_producto_btn.pack(pady=5)
+    tk.Button(ventana_editar, text="Agregar Producto", command=agregar_producto).pack(pady=5)
+    tk.Button(ventana_editar, text="Editar Producto", command=editar_producto).pack(pady=5)
+    tk.Button(ventana_editar, text="Eliminar Producto", command=eliminar_producto).pack(pady=5)
 
 def eliminar_sucursal():
     seleccion = sucursales_list.curselection()
     if not seleccion:
-        messagebox.showerror("Error", "Debe seleccionar una sucursal.")
+        messagebox.showerror("Error", "Seleccione una sucursal.")
         return
-
-    indice = seleccion[0]
-    sucursal_eliminada = empresa_suc.pop(indice)
+    empresa_suc.pop(seleccion[0])
     guardar_sucursales(empresa_suc)
     mostrar_inventarios()
-    messagebox.showinfo("Éxito", f"Sucursal '{sucursal_eliminada[0]}' eliminada correctamente.")
-
-
-def ventana_vender():
-    ventana_inicio.withdraw()  # Ocultar ventana inicial
-
-    def seleccionar_sucursal_venta():
-        seleccion = sucursales_list_venta.curselection()
-        if not seleccion:
-            messagebox.showerror("Error", "Debe seleccionar una sucursal.")
-            return
-
-        indice = seleccion[0]
-        sucursal = empresa_suc[indice]
-        operar_venta(sucursal)
-
-    # Crear ventana de ventas
-    ventana_ventas = tk.Toplevel(ventana_inicio)
-    ventana_ventas.title("Ventas")
-    ventana_ventas.geometry("400x400")
-
-    tk.Label(ventana_ventas, text="Seleccione una Sucursal para Vender:", font=("Arial", 12)).pack(pady=10)
-    sucursales_list_venta = tk.Listbox(ventana_ventas, width=50)
-    sucursales_list_venta.pack(pady=10)
-
-    for sucursal in empresa_suc:
-        sucursales_list_venta.insert(tk.END, sucursal[0])
-
-    tk.Button(ventana_ventas, text="Seleccionar", command=seleccionar_sucursal_venta).pack(pady=10)
-
+    messagebox.showinfo("Éxito", "Sucursal eliminada.")
+# Funciones de ventas
 def operar_venta(sucursal):
-    ventana_venta = tk.Toplevel(root)
-    ventana_venta.title(f"Venta - {sucursal[0]}")
+    boleta = []
+    ventana_venta = tk.Toplevel()
+    ventana_venta.title(f"Ventas en {sucursal[0]}")
     ventana_venta.geometry("400x400")
 
+    tk.Label(ventana_venta, text=f"Sucursal: {sucursal[0]}", font=("Arial", 12)).pack(pady=10)
     productos_list = tk.Listbox(ventana_venta, width=50)
     productos_list.pack(pady=10)
 
@@ -195,51 +182,151 @@ def operar_venta(sucursal):
             return
 
         producto_seleccionado = productos_list.get(seleccion).split(" - ")[0]
-        try:
-            cantidad = int(simpledialog.askstring("Venta", f"Ingrese la cantidad a vender de '{producto_seleccionado}':"))
-            if cantidad <= 0 or cantidad > sucursal[1][producto_seleccionado][1]:
-                messagebox.showerror("Error", "Cantidad inválida o insuficiente en stock.")
-                return
-        except ValueError:
-            messagebox.showerror("Error", "Cantidad inválida.")
+        cantidad = simpledialog.askinteger("Cantidad", f"Ingrese la cantidad de '{producto_seleccionado}' a vender:")
+        if cantidad is None or cantidad <= 0:
             return
 
-        # Actualizar stock
-        precio, stock_actual = sucursal[1][producto_seleccionado]
-        nuevo_stock = stock_actual - cantidad
-        sucursal[1][producto_seleccionado] = (precio, nuevo_stock)
+        precio, stock = sucursal[1][producto_seleccionado]
+        if cantidad > stock:
+            messagebox.showerror("Error", "Stock insuficiente.")
+            return
+
+        sucursal[1][producto_seleccionado] = (precio, stock - cantidad)
         guardar_sucursales(empresa_suc)
-
-        # Actualizar lista
         productos_list.delete(seleccion)
-        productos_list.insert(seleccion, f"{producto_seleccionado} - Precio: ${precio}, Stock: {nuevo_stock}")
-        messagebox.showinfo("Éxito", f"Venta de {cantidad} unidades de '{producto_seleccionado}' realizada correctamente.")
+        productos_list.insert(seleccion, f"{producto_seleccionado} - Precio: ${precio}, Stock: {stock - cantidad}")
 
-    tk.Button(ventana_venta, text="Vender Producto", command=vender_producto).pack(pady=5)
+        # Agregar producto vendido a la boleta
+        boleta.append((producto_seleccionado, cantidad, precio * cantidad))
+        messagebox.showinfo("Venta realizada", f"Se vendieron {cantidad} unidades de '{producto_seleccionado}'.")
 
-# Crear la ventana inicial
-ventana_inicio = tk.Tk()
-ventana_inicio.title("Gestión de Sucursales")
-ventana_inicio.geometry("400x200")
+    def finalizar_venta():
+        if not boleta:
+            messagebox.showinfo("Boleta", "No hay productos vendidos.")
+            return
 
-tk.Label(ventana_inicio, text="Seleccione una opción:", font=("Arial", 14)).pack(pady=20)
-tk.Button(ventana_inicio, text="Administrativo", command=ventana_administrativo, width=20).pack(pady=10)
-tk.Button(ventana_inicio, text="Vender", command=ventana_vender, width=20).pack(pady=10)
+        # Mostrar el resumen de la venta
+        resumen = "\n".join([f"{prod} x{cant} - ${total:.2f}" for prod, cant, total in boleta])
+        total_final = sum(total for _, _, total in boleta)
+        messagebox.showinfo("Boleta", f"Resumen de la venta:\n\n{resumen}\n\nTotal: ${total_final:.2f}")
 
-# Crear la ventana principal administrativa oculta al inicio
-root = tk.Toplevel(ventana_inicio)
-root.title("Área Administrativa")
-root.geometry("500x400")
-root.withdraw()  # Ocultar al inicio
+        # Reiniciar la boleta para la próxima venta
+        boleta.clear()
 
-tk.Label(root, text="Sucursales:", font=("Arial", 14)).pack(pady=10)
-sucursales_list = tk.Listbox(root, width=50)
+    tk.Button(ventana_venta, text="Finalizar Venta", command=finalizar_venta).pack(pady=10)
+
+    tk.Button(ventana_venta, text="Vender Producto", command=vender_producto).pack(pady=10)
+
+# Ventanas principales
+def ventana_seleccion():
+    ventana_login.withdraw()
+
+    ventana_seleccion = tk.Toplevel()
+    ventana_seleccion.title("Seleccionar Acción")
+    ventana_seleccion.geometry("300x200")
+
+    tk.Label(ventana_seleccion, text="¿Qué acción desea realizar?", font=("Arial", 14)).pack(pady=20)
+
+    tk.Button(ventana_seleccion, text="Administrar", command=lambda: [ventana_seleccion.withdraw(), ventana_administrativa.deiconify()]).pack(pady=10)
+    tk.Button(ventana_seleccion, text="Vender", command=lambda: [ventana_seleccion.withdraw(), ventana_vender()]).pack(pady=10)
+
+def ventana_vender():
+    def seleccionar_sucursal_venta():
+        seleccion = sucursales_list_venta.curselection()
+        if not seleccion:
+            messagebox.showerror("Error", "Debe seleccionar una sucursal.")
+            return
+
+        indice = seleccion[0]
+        sucursal = empresa_suc[indice]
+        operar_venta(sucursal)
+
+    ventana_ventas = tk.Toplevel()
+    ventana_ventas.title("Ventas")
+    ventana_ventas.geometry("400x400")
+
+    tk.Label(ventana_ventas, text="Seleccione una Sucursal para Vender:", font=("Arial", 12)).pack(pady=10)
+    sucursales_list_venta = tk.Listbox(ventana_ventas, width=50)
+    sucursales_list_venta.pack(pady=10)
+
+    for sucursal in empresa_suc:
+        sucursales_list_venta.insert(tk.END, sucursal[0])
+
+    tk.Button(ventana_ventas, text="Seleccionar", command=seleccionar_sucursal_venta).pack(pady=10)
+
+# Inicio de sesión
+def iniciar_sesion():
+    nombre = nombre_entry.get()
+    apellido = apellido_entry.get()
+    dni = dni_entry.get()
+    usuarios = cargar_usuarios()
+    if any(user for user in usuarios if user["nombre"] == nombre and user["apellido"] == apellido and user["dni"] == dni):
+        ventana_seleccion()
+    else:
+        messagebox.showerror("Error", "Datos incorrectos.")
+
+verificaciones_pendientes = {}
+def crear_cuenta():
+   nombre = nombre_entry.get()
+   apellido = apellido_entry.get()
+   dni = dni_entry.get()
+   email = simpledialog.askstring("Correo Electrónico", "Ingrese su correo electrónico:")
+   if not nombre or not apellido or not dni or not email:
+       messagebox.showerror("Error", "Complete todos los campos.")
+       return
+   usuarios = cargar_usuarios()
+   if any(user["dni"] == dni for user in usuarios):
+       messagebox.showerror("Error", "DNI ya registrado.")
+       return
+   # Generar enlace de verificación único
+   codigo_verificacion = str(uuid4())
+   verificaciones_pendientes[codigo_verificacion] = {"nombre": nombre, "apellido": apellido, "dni": dni, "email": email}
+   enlace_verificacion = f"http://localhost/verificar/{codigo_verificacion}"
+   # Enviar correo
+   try:
+       enviar_correo(email, nombre, enlace_verificacion)
+       messagebox.showinfo("Éxito", "Se ha enviado un correo de verificación. Por favor, revisa tu bandeja de entrada.")
+   except Exception as e:
+       messagebox.showerror("Error", f"No se pudo enviar el correo: {e}")
+
+def verificar_cuenta(codigo_verificacion):
+   if codigo_verificacion in verificaciones_pendientes:
+       usuario = verificaciones_pendientes.pop(codigo_verificacion)
+       usuarios = cargar_usuarios()
+       usuarios.append(usuario)
+       guardar_usuarios(usuarios)
+       messagebox.showinfo("Éxito", "Cuenta verificada correctamente.")
+   else:
+       messagebox.showerror("Error", "Código de verificación inválido.")
+       
+# Configuración de la ventana principal
+ventana_login = tk.Tk()
+ventana_login.title("Iniciar sesión")
+ventana_login.geometry("400x300")
+
+tk.Label(ventana_login, text="Nombre:").pack(pady=5)
+nombre_entry = tk.Entry(ventana_login)
+nombre_entry.pack(pady=5)
+tk.Label(ventana_login, text="Apellido:").pack(pady=5)
+apellido_entry = tk.Entry(ventana_login)
+apellido_entry.pack(pady=5)
+tk.Label(ventana_login, text="DNI:").pack(pady=5)
+dni_entry = tk.Entry(ventana_login)
+dni_entry.pack(pady=5)
+
+tk.Button(ventana_login, text="Iniciar sesión", command=iniciar_sesion).pack(pady=10)
+tk.Button(ventana_login, text="Crear cuenta", command=crear_cuenta).pack(pady=10)
+
+ventana_administrativa = tk.Toplevel(ventana_login)
+ventana_administrativa.title("Área Administrativa")
+ventana_administrativa.geometry("400x400")
+ventana_administrativa.withdraw()
+
+sucursales_list = tk.Listbox(ventana_administrativa, width=50)
 sucursales_list.pack(pady=10)
+tk.Button(ventana_administrativa, text="Agregar Sucursal", command=agregar_sucursal).pack(pady=5)
+tk.Button(ventana_administrativa, text="Editar Sucursal", command=editar_sucursal).pack(pady=5)
+tk.Button(ventana_administrativa, text="Eliminar Sucursal", command=eliminar_sucursal).pack(pady=5)
 
 mostrar_inventarios()
-
-tk.Button(root, text="Agregar Sucursal", command=agregar_sucursal).pack(pady=5)
-tk.Button(root, text="Editar Sucursal", command=editar_sucursal).pack(pady=5)
-tk.Button(root, text="Eliminar Sucursal", command=eliminar_sucursal).pack(pady=5)
-
-ventana_inicio.mainloop()
+ventana_login.mainloop()
